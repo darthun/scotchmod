@@ -31,10 +31,8 @@ public class BogEarthTileEntity extends TileEntity implements ITickableTileEntit
         {
             FluidState fluidState = world.getFluidState(s);
             Fluid f = fluidState.getFluid();
-            System.out.println("fluid: " + f.toString());
             if( f== Fluids.WATER || f == Fluids.FLOWING_WATER)
             {
-                System.out.println("HYDRATED !!!");
                 return true;
             }
         }
