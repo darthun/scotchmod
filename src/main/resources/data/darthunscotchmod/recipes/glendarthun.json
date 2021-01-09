@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "###",
+    " G ",
+    " G "
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:apple"
+    },
+    "G": {
+      "tag": "forge:crops/barley"
+    }
+  },
+  "result": {
+    "item": "darthunscotchmod:glendarthun",
+    "count": 1
+  }
+}
