@@ -18,4 +18,5 @@ public class ItemInit {
     public static final RegistryObject<SpecialItem> SPECIAL_ITEM = ITEMS.register("special_item",
             ()-> new SpecialItem(new Item.Properties().group(ItemGroup.MISC)) );
     public static final RegistryObject<BlockItem> BARLEY = ITEMS.register("barley", ()-> new BlockItem(BlockInit.BARLEY.get(), new Item.Properties().group(ItemGroup.FOOD)) );
+    public static final RegistryObject<Item> BARLEYGROWN = ITEMS.register("barleygrown",()->new Item(new Item.Properties().group(ItemGroup.FOOD)));
 }

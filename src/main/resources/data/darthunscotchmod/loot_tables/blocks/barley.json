@@ -9,7 +9,7 @@
           "children": [
             {
               "type": "minecraft:item",
-              "name": "darthunscotchmod:glendarthun",
+              "name": "darthunscotchmod:barleygrown",
               "conditions": [
                 {
                   "condition": "minecraft:block_state_property",
