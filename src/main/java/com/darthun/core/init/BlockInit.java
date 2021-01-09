@@ -1,11 +1,15 @@
 package com.darthun.core.init;
 
+import com.darthun.common.blocks.BogEarth;
+import com.darthun.common.items.SpecialItem;
 import com.darthun.scotchmod.ScotchMod;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
@@ -29,11 +33,13 @@ public class BlockInit {
                     .tickRandomly()
                     .zeroHardnessAndResistance()
                     .sound(SoundType.CROP)));
-
-    /*
-    WHEAT = register("wheat", new CropsBlock(Properties.create(Material.PLANTS).doesNotBlockMovement().tickRandomly().zeroHardnessAndResistance().sound(SoundType.CROP)));
-        FAR
-    * */
+    public static final RegistryObject<Block> BOGEARTH =
+            BLOCKS.register("bogearth",
+                    ()-> new BogEarth(AbstractBlock.Properties.create(Material.IRON)));
+    public static final RegistryObject<Block> PEATBLOCK =
+            BLOCKS.register("peatblock",
+                    ()-> new Block(AbstractBlock.Properties.from(Blocks.DIRT)
+                    ));
 /*    public static final RegistryObject<Block> EXAMPLE_BLOCK2 =
             BLOCKS.register("example_block",
                     ()-> new Block(AbstractBlock.Properties.from(Blocks.BASALT)));

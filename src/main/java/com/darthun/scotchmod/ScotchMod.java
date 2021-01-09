@@ -2,6 +2,7 @@ package com.darthun.scotchmod;
 
 import com.darthun.core.init.BlockInit;
 import com.darthun.core.init.ItemInit;
+import com.darthun.core.init.TileEntityInit;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.renderer.RenderType;
@@ -37,6 +38,7 @@ public class ScotchMod
         ItemInit.ITEMS.register(bus);
         BlockInit.BLOCKS.register(bus);
         bus.addListener(this::doClientStuff);
+        TileEntityInit.TILE_ENTITY_TYPE.register(bus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }

@@ -1,10 +1,12 @@
 package com.darthun.core.init;
 
+import com.darthun.common.items.Peat;
 import com.darthun.common.items.SpecialItem;
 import com.darthun.scotchmod.ScotchMod;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.Items;
 import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -19,4 +21,7 @@ public class ItemInit {
             ()-> new SpecialItem(new Item.Properties().group(ItemGroup.MISC)) );
     public static final RegistryObject<BlockItem> BARLEY = ITEMS.register("barley", ()-> new BlockItem(BlockInit.BARLEY.get(), new Item.Properties().group(ItemGroup.FOOD)) );
     public static final RegistryObject<Item> BARLEYGROWN = ITEMS.register("barleygrown",()->new Item(new Item.Properties().group(ItemGroup.FOOD)));
+    public static final RegistryObject<BlockItem> BOGEARTH = ITEMS.register("bogearth", ()-> new BlockItem(BlockInit.BOGEARTH.get(), new Item.Properties().group(ItemGroup.MATERIALS)));
+    public static final RegistryObject<Item> PEAT = ITEMS.register("peat",
+            ()-> new Peat(new Item.Properties().group(ItemGroup.MISC)));
 }

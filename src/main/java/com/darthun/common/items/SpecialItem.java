@@ -31,4 +31,9 @@ public class SpecialItem extends Item {
         playerEntity.addPotionEffect(new EffectInstance(Effects.SLOW_FALLING,200,5));
         return ActionResult.resultSuccess(playerEntity.getHeldItem(hand));
     }
+
+    @Override
+    public int getBurnTime(ItemStack itemStack) {
+        return 1600;
+    }
 }
