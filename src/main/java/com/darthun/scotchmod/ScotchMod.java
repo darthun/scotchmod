@@ -54,6 +54,7 @@ public class ScotchMod
         // do something that can only be done on the client
         LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
         RenderTypeLookup.setRenderLayer(BlockInit.BARLEY.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(BlockInit.STEEPCONTROLLER.get(), RenderType.getCutout());
     }
 /*
     private void enqueueIMC(final InterModEnqueueEvent event)
