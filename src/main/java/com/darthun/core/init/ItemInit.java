@@ -25,4 +25,5 @@ public class ItemInit {
     public static final RegistryObject<Item> PEAT = ITEMS.register("peat",
             ()-> new Peat(new Item.Properties().group(ItemGroup.MISC)));
     public static final RegistryObject<BlockItem> STEEPCONTROLLER = ITEMS.register("steepcontroller", ()-> new BlockItem(BlockInit.STEEPCONTROLLER.get(), new Item.Properties().group(ItemGroup.MATERIALS)));
+    public static final RegistryObject<BlockItem> STEEPBLOCK = ITEMS.register("steepblock", ()-> new BlockItem(BlockInit.STEEPBLOCK.get(), new Item.Properties().group(ItemGroup.MATERIALS)));
 }

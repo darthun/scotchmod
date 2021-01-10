@@ -2,6 +2,7 @@ package com.darthun.core.init;
 
 import com.darthun.common.blocks.SteepController;
 import com.darthun.common.tiles.BogEarthTileEntity;
+import com.darthun.common.tiles.SteepBlockTileEntity;
 import com.darthun.common.tiles.SteepControllerTileEntity;
 import com.darthun.scotchmod.ScotchMod;
 import com.google.common.collect.Sets;
@@ -17,4 +18,6 @@ public class TileEntityInit {
             ()-> new TileEntityType<>(BogEarthTileEntity::new, Sets.newHashSet(BlockInit.BOGEARTH.get()),null));
     public static final RegistryObject<TileEntityType<SteepControllerTileEntity>> STEEPCONTROLLERTILEENTITY = TILE_ENTITY_TYPE.register("steepcontroller",
             ()-> new TileEntityType<>(SteepControllerTileEntity::new, Sets.newHashSet(BlockInit.STEEPCONTROLLER.get()),null));
+    public static final RegistryObject<TileEntityType<SteepBlockTileEntity>> STEEPBLOCKTILEENTITY = TILE_ENTITY_TYPE.register("steepblock",
+            ()-> new TileEntityType<>(SteepBlockTileEntity::new, Sets.newHashSet(BlockInit.STEEPBLOCK.get()),null));
 }

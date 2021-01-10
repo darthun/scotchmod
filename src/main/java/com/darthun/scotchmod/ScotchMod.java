@@ -55,6 +55,7 @@ public class ScotchMod
         LOGGER.info("Got game settings {}", event.getMinecraftSupplier().get().gameSettings);
         RenderTypeLookup.setRenderLayer(BlockInit.BARLEY.get(), RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(BlockInit.STEEPCONTROLLER.get(), RenderType.getCutout());
+        RenderTypeLookup.setRenderLayer(BlockInit.STEEPBLOCK.get(), RenderType.getCutout());
     }
 /*
     private void enqueueIMC(final InterModEnqueueEvent event)
