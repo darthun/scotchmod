@@ -6,5 +6,7 @@
   "block.darthunscotchmod.example_block": "Example Block",
   "block.darthunscotchmod.bogearth": "Bog Earth",
   "block.darthunscotchmod.peatblock": "Peat",
-  "item.darthunscotchmod.peat": "Peat"
+  "item.darthunscotchmod.peat": "Peat",
+  "block.darthunscotchmod.steepcontroller": "Steep Controller",
+  "block.darthunscotchmod.steepblock": "Steep Block"
 }
