@@ -24,4 +24,5 @@ public class ItemInit {
     public static final RegistryObject<BlockItem> BOGEARTH = ITEMS.register("bogearth", ()-> new BlockItem(BlockInit.BOGEARTH.get(), new Item.Properties().group(ItemGroup.MATERIALS)));
     public static final RegistryObject<Item> PEAT = ITEMS.register("peat",
             ()-> new Peat(new Item.Properties().group(ItemGroup.MISC)));
+    public static final RegistryObject<BlockItem> STEEPCONTROLLER = ITEMS.register("steepcontroller", ()-> new BlockItem(BlockInit.STEEPCONTROLLER.get(), new Item.Properties().group(ItemGroup.MATERIALS)));
 }

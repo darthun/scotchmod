@@ -1,6 +1,7 @@
 package com.darthun.core.init;
 
 import com.darthun.common.blocks.BogEarth;
+import com.darthun.common.blocks.SteepController;
 import com.darthun.common.items.SpecialItem;
 import com.darthun.scotchmod.ScotchMod;
 import net.minecraft.block.*;
@@ -40,6 +41,9 @@ public class BlockInit {
             BLOCKS.register("peatblock",
                     ()-> new Block(AbstractBlock.Properties.from(Blocks.DIRT)
                     ));
+    public static final RegistryObject<Block> STEEPCONTROLLER =
+            BLOCKS.register("steepcontroller",
+                    ()-> new SteepController(AbstractBlock.Properties.create(Material.ROCK)));
 /*    public static final RegistryObject<Block> EXAMPLE_BLOCK2 =
             BLOCKS.register("example_block",
                     ()-> new Block(AbstractBlock.Properties.from(Blocks.BASALT)));
