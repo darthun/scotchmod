@@ -1,14 +1,19 @@
 package com.darthun.common.blocks;
 
+import com.darthun.common.tiles.SteepControllerTileEntity;
+import com.darthun.core.init.BlockInit;
 import com.darthun.core.init.TileEntityInit;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 
@@ -35,4 +40,29 @@ public class SteepBlock extends Block {
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return TileEntityInit.STEEPBLOCKTILEENTITY.get().create();
     }
+
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos blockPos, BlockState blockState, @Nullable LivingEntity livingEntity, ItemStack itemStack) {
+        super.onBlockPlacedBy(world, blockPos, blockState, livingEntity, itemStack);
+        SteepControllerTileEntity steepControllerTileEntity = this.getSteepControllerTileEntity(blockPos, world);
+        if(steepControllerTileEntity!=null){
+            steepControllerTileEntity.assembleMachine();
+        }
+    }
+
+    private SteepControllerTileEntity getSteepControllerTileEntity(BlockPos pos, World world){
+
+        Iterable<BlockPos> surroundings = BlockPos.getAllInBoxMutable(pos.add(-1,0,-1),pos.add(1,0,1));
+        for(BlockPos s: surroundings)
+        {
+            Block b = world.getBlockState(s).getBlock();
+            if( b == BlockInit.STEEPCONTROLLER.get())
+            {
+                SteepControllerTileEntity steepControllerTileEntity = (SteepControllerTileEntity) world.getTileEntity(s);
+                return steepControllerTileEntity;
+            }
+        }
+        return null;
+    }
+
 }
