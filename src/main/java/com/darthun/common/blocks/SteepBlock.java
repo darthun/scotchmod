@@ -1,5 +1,6 @@
 package com.darthun.common.blocks;
 
+import com.darthun.client.util.ClientUtils;
 import com.darthun.common.tiles.SteepControllerTileEntity;
 import com.darthun.core.init.BlockInit;
 import com.darthun.core.init.TileEntityInit;
@@ -22,6 +23,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeConfig;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
@@ -32,13 +34,20 @@ public class SteepBlock extends Block {
     private static final VoxelShape TOP_SHAPE = makeCuboidShape(0, 0, 0, 16, 1, 16);
     private static final VoxelShape BOTTOM_SHAPE = makeCuboidShape(0, 0, 0, 1, 1, 1);
     private static final VoxelShape SHAPE = VoxelShapes.or(BOTTOM_SHAPE, TOP_SHAPE);
-    private static final VoxelShape SHAPE_MACHINECENTER = VoxelShapes.combineAndSimplify(Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
+    private static final VoxelShape SHAPE_MACHINECENTER_NORTH = VoxelShapes.combineAndSimplify(Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
             Block.makeCuboidShape(0, 1, 0, 16, 16, 1), IBooleanFunction.OR);
-    private static final VoxelShape SHAPE_MACHINECORNER = Stream.of(
+    private static final VoxelShape SHAPE_MACHINECORNER_NORTH = Stream.of(
             Block.makeCuboidShape(0, 1, 0, 16, 16, 1),
             Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
             Block.makeCuboidShape(15, 1, 1, 16, 16, 16)
     ).reduce((v1, v2) -> {return VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR);}).get();
+    private static final VoxelShape SHAPE_MACHINECENTER_EAST = ClientUtils.rotateShape(Direction.NORTH,Direction.EAST,SHAPE_MACHINECENTER_NORTH);
+    private static final VoxelShape SHAPE_MACHINECENTER_SOUTH = ClientUtils.rotateShape(Direction.NORTH,Direction.SOUTH,SHAPE_MACHINECENTER_NORTH);
+    private static final VoxelShape SHAPE_MACHINECENTER_WEST = ClientUtils.rotateShape(Direction.NORTH,Direction.WEST,SHAPE_MACHINECENTER_NORTH);
+    private static final VoxelShape SHAPE_MACHINECORNER_EAST = ClientUtils.rotateShape(Direction.NORTH,Direction.EAST,SHAPE_MACHINECORNER_NORTH);
+    private static final VoxelShape SHAPE_MACHINECORNER_SOUTH = ClientUtils.rotateShape(Direction.NORTH,Direction.SOUTH,SHAPE_MACHINECORNER_NORTH);
+    private static final VoxelShape SHAPE_MACHINECORNER_WEST = ClientUtils.rotateShape(Direction.NORTH,Direction.WEST,SHAPE_MACHINECORNER_NORTH);
+
     public static final DirectionProperty FACING = HORIZONTAL_FACING;
     public static final BooleanProperty MACHINECENTER = BooleanProperty.create("machinecenter");
     public static final BooleanProperty MACHINECORNER = BooleanProperty.create("machinecorner");
@@ -62,14 +71,38 @@ public class SteepBlock extends Block {
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
         //TODO Switch case here
+
         if(state.get(MACHINECENTER).booleanValue())
         {
             if(state.get(MACHINECORNER).booleanValue())
             {
-                return SHAPE_MACHINECORNER;
+                switch(state.get(FACING))
+                {
+                    case NORTH:
+                        return SHAPE_MACHINECORNER_NORTH;
+                    case EAST:
+                        return SHAPE_MACHINECORNER_EAST;
+                    case SOUTH:
+                        return SHAPE_MACHINECORNER_SOUTH;
+                    case WEST:
+                        return SHAPE_MACHINECORNER_WEST;
+                    default:
+                        return SHAPE_MACHINECORNER_NORTH;
+                }
             }
-            return SHAPE_MACHINECENTER;
-
+            switch(state.get(FACING))
+            {
+                case NORTH:
+                    return SHAPE_MACHINECENTER_NORTH;
+                case EAST:
+                    return SHAPE_MACHINECENTER_EAST;
+                case SOUTH:
+                    return SHAPE_MACHINECENTER_SOUTH;
+                case WEST:
+                    return SHAPE_MACHINECENTER_WEST;
+                default:
+                    return SHAPE_MACHINECENTER_NORTH;
+            }
         }
         return SHAPE;
     }
