@@ -1,22 +1,26 @@
 package com.darthun.common.blocks;
 
 import com.darthun.client.util.ClientUtils;
+import com.darthun.common.tiles.SteepBlockTileEntity;
 import com.darthun.common.tiles.SteepControllerTileEntity;
 import com.darthun.core.init.BlockInit;
 import com.darthun.core.init.TileEntityInit;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.LivingEntity;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
+
 import net.minecraft.util.math.BlockPos;
+
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -24,6 +28,7 @@ import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeConfig;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
@@ -140,5 +145,6 @@ public class SteepBlock extends Block {
         }
         return null;
     }
+
 
 }
