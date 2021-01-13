@@ -42,7 +42,7 @@ public class SteepBlock extends Block {
 
     public SteepBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
-        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, true).with(MACHINECORNER,true));
+        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, false).with(MACHINECORNER,false));
     }
 
     @Override
