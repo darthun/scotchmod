@@ -15,6 +15,7 @@ import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
@@ -22,19 +23,26 @@ import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 public class SteepBlock extends Block {
     private static final VoxelShape TOP_SHAPE = makeCuboidShape(0, 0, 0, 16, 1, 16);
     private static final VoxelShape BOTTOM_SHAPE = makeCuboidShape(0, 0, 0, 1, 1, 1);
     private static final VoxelShape SHAPE = VoxelShapes.or(BOTTOM_SHAPE, TOP_SHAPE);
+    private static final VoxelShape SHAPE_MACHINECENTER = VoxelShapes.combineAndSimplify(Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
+            Block.makeCuboidShape(0, 1, 0, 16, 16, 1), IBooleanFunction.OR);
+    private static final VoxelShape SHAPE_MACHINECORNER = Stream.of(
+            Block.makeCuboidShape(0, 1, 0, 16, 16, 1),
+            Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
+            Block.makeCuboidShape(15, 1, 1, 16, 16, 16)
+    ).reduce((v1, v2) -> {return VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR);}).get();
     public static final DirectionProperty FACING = HorizontalBlock.HORIZONTAL_FACING;
-    //public static final IntegerProperty MACHINEPART = IntegerProperty.create("machinepart",0,2);
     public static final BooleanProperty MACHINECENTER = BooleanProperty.create("machinecenter");
     public static final BooleanProperty MACHINECORNER = BooleanProperty.create("machinecorner");
 
     public SteepBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
-        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, true));
+        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, true).with(MACHINECORNER,true));
     }
 
     @Override
@@ -46,6 +54,18 @@ public class SteepBlock extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context) {
+        //TODO Switch case here
+        if(state.get(MACHINECENTER).booleanValue())
+        {
+            System.out.println("machine center state true");
+            if(state.get(MACHINECORNER).booleanValue())
+            {
+                System.out.println("machine corner state true");
+                return SHAPE_MACHINECORNER;
+            }
+            return SHAPE_MACHINECENTER;
+
+        }
         return SHAPE;
     }
     @Override
