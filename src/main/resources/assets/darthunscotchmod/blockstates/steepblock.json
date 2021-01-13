@@ -1,5 +1,11 @@
 {
-  "variants": {
-    "": {"model":  "darthunscotchmod:block/steepblock"}
-  }
+  "multipart": [
+    {   "apply": { "model": "darthunscotchmod:block/steepblock" }},
+    {   "when": { "machinecenter": "true" },
+      "apply": { "model": "darthunscotchmod:block/steepblock_wall", "uvlock": true }
+    },
+    {   "when": { "machinecorner": "true" },
+      "apply": { "model": "darthunscotchmod:block/steepblock_cornerwall", "uvlock": true }
+    }
+  ]
 }

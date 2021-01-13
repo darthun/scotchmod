@@ -3,10 +3,16 @@ package com.darthun.common.blocks;
 import com.darthun.common.tiles.SteepControllerTileEntity;
 import com.darthun.core.init.BlockInit;
 import com.darthun.core.init.TileEntityInit;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalBlock;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.DirectionProperty;
+import net.minecraft.state.IntegerProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -21,9 +27,21 @@ public class SteepBlock extends Block {
     private static final VoxelShape TOP_SHAPE = makeCuboidShape(0, 0, 0, 16, 1, 16);
     private static final VoxelShape BOTTOM_SHAPE = makeCuboidShape(0, 0, 0, 1, 1, 1);
     private static final VoxelShape SHAPE = VoxelShapes.or(BOTTOM_SHAPE, TOP_SHAPE);
+    public static final DirectionProperty FACING = HorizontalBlock.HORIZONTAL_FACING;
+    //public static final IntegerProperty MACHINEPART = IntegerProperty.create("machinepart",0,2);
+    public static final BooleanProperty MACHINECENTER = BooleanProperty.create("machinecenter");
+    public static final BooleanProperty MACHINECORNER = BooleanProperty.create("machinecorner");
 
     public SteepBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
+        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, true));
+    }
+
+    @Override
+    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+        //super.fillStateContainer(builder);
+        builder.add(MACHINECENTER);
+        builder.add(MACHINECORNER);
     }
 
     @Override
