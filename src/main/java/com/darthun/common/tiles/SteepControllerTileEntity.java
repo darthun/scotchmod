@@ -142,11 +142,21 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
         return new TranslationTextComponent("container."+ScotchMod.MOD_ID+".steepblockcontroller");
     }
 
-    @Nullable
+    @Override
+    protected Container createMenu(int i, PlayerInventory playerInventory) {
+        return null;
+    }
+
+/*    @Nullable
     @Override
     public Container createMenu(int p_createMenu_1_, PlayerInventory p_createMenu_2_, PlayerEntity p_createMenu_3_) {
         return super.createMenu(p_createMenu_1_, p_createMenu_2_, p_createMenu_3_);
     }
+
+    @Override
+    protected Container createMenu(int i, PlayerInventory playerInventory) {
+        return this.createMenu(i,playerInventory, playerInventory.player);
+    }*/
 
     @Override
     public int getSizeInventory() {

@@ -1,10 +1,13 @@
 package com.darthun.scotchmod;
 
+import com.darthun.client.gui.SteepControllerScreen;
 import com.darthun.core.init.BlockInit;
+import com.darthun.core.init.ContainerInit;
 import com.darthun.core.init.ItemInit;
 import com.darthun.core.init.TileEntityInit;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.gui.ScreenManager;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraftforge.common.MinecraftForge;
@@ -39,6 +42,7 @@ public class ScotchMod
         BlockInit.BLOCKS.register(bus);
         bus.addListener(this::doClientStuff);
         TileEntityInit.TILE_ENTITY_TYPE.register(bus);
+        ContainerInit.CONTAINER_TYPES.register(bus);
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -56,12 +60,14 @@ public class ScotchMod
         RenderTypeLookup.setRenderLayer(BlockInit.BARLEY.get(), RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(BlockInit.STEEPCONTROLLER.get(), RenderType.getCutout());
         RenderTypeLookup.setRenderLayer(BlockInit.STEEPBLOCK.get(), RenderType.getCutout());
+
+        ScreenManager.registerFactory(ContainerInit.STEEPCONTROLLER.get(),SteepControllerScreen::new);
     }
 /*
     private void enqueueIMC(final InterModEnqueueEvent event)
     {
         // some example code to dispatch IMC to another mod
-        InterModComms.sendTo("examplemod", "helloworld", () -> { LOGGER.info("Hello world from the MDK"); return "Hello world";});
+        InterModComms.sendTo("examplemod", " helloworld", () -> { LOGGER.info("Hello world from the MDK"); return "Hello world";});
     }
 
     private void processIMC(final InterModProcessEvent event)
