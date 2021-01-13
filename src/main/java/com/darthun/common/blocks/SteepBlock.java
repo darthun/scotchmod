@@ -14,6 +14,7 @@ import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.shapes.IBooleanFunction;
 import net.minecraft.util.math.shapes.ISelectionContext;
@@ -24,6 +25,8 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.util.stream.Stream;
+
+import static net.minecraft.block.HorizontalBlock.*;
 
 public class SteepBlock extends Block {
     private static final VoxelShape TOP_SHAPE = makeCuboidShape(0, 0, 0, 16, 1, 16);
@@ -36,13 +39,16 @@ public class SteepBlock extends Block {
             Block.makeCuboidShape(0, 0, 0, 16, 1, 16),
             Block.makeCuboidShape(15, 1, 1, 16, 16, 16)
     ).reduce((v1, v2) -> {return VoxelShapes.combineAndSimplify(v1, v2, IBooleanFunction.OR);}).get();
-    public static final DirectionProperty FACING = HorizontalBlock.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = HORIZONTAL_FACING;
     public static final BooleanProperty MACHINECENTER = BooleanProperty.create("machinecenter");
     public static final BooleanProperty MACHINECORNER = BooleanProperty.create("machinecorner");
 
     public SteepBlock(Properties p_i48440_1_) {
         super(p_i48440_1_);
-        this.setDefaultState(this.getStateContainer().getBaseState().with(MACHINECENTER, false).with(MACHINECORNER,false));
+        this.setDefaultState(this.getStateContainer().getBaseState()
+                .with(MACHINECENTER, false)
+                .with(MACHINECORNER,false)
+                .with(FACING, Direction.NORTH));
     }
 
     @Override
@@ -50,6 +56,7 @@ public class SteepBlock extends Block {
         //super.fillStateContainer(builder);
         builder.add(MACHINECENTER);
         builder.add(MACHINECORNER);
+        builder.add(FACING);
     }
 
     @Override
@@ -57,10 +64,8 @@ public class SteepBlock extends Block {
         //TODO Switch case here
         if(state.get(MACHINECENTER).booleanValue())
         {
-            System.out.println("machine center state true");
             if(state.get(MACHINECORNER).booleanValue())
             {
-                System.out.println("machine corner state true");
                 return SHAPE_MACHINECORNER;
             }
             return SHAPE_MACHINECENTER;

@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -51,14 +52,30 @@ public class SteepControllerTileEntity extends TileEntity  {
         BlockPos BOTTOM_LEFT_CORNER = BOTTOM_ROW_CENTER.west();
         BlockPos BOTTOM_RIGHT_CORNER = BOTTOM_ROW_CENTER.east();
 
-        world.setBlockState(TOP_LEFT_CORNER,world.getBlockState(TOP_LEFT_CORNER).with(SteepBlock.MACHINECENTER,true).with(SteepBlock.MACHINECORNER,true));
-        world.setBlockState(TOP_RIGHT_CORNER,world.getBlockState(TOP_RIGHT_CORNER).with(SteepBlock.MACHINECENTER,true).with(SteepBlock.MACHINECORNER,true));
-        world.setBlockState(BOTTOM_LEFT_CORNER,world.getBlockState(BOTTOM_LEFT_CORNER).with(SteepBlock.MACHINECENTER,true).with(SteepBlock.MACHINECORNER,true));
-        world.setBlockState(BOTTOM_RIGHT_CORNER,world.getBlockState(BOTTOM_RIGHT_CORNER).with(SteepBlock.MACHINECENTER,true).with(SteepBlock.MACHINECORNER,true));
-        world.setBlockState(TOP_ROW_CENTER,world.getBlockState(TOP_ROW_CENTER).with(SteepBlock.MACHINECENTER,true));
-        world.setBlockState(MIDDLE_LEFT_CENTER,world.getBlockState(MIDDLE_LEFT_CENTER).with(SteepBlock.MACHINECENTER,true));
-        world.setBlockState(MIDDLE_RIGHT_CENTER,world.getBlockState(MIDDLE_RIGHT_CENTER).with(SteepBlock.MACHINECENTER,true));
-        world.setBlockState(BOTTOM_ROW_CENTER,world.getBlockState(BOTTOM_ROW_CENTER).with(SteepBlock.MACHINECENTER,true));
+        world.setBlockState(TOP_LEFT_CORNER,world.getBlockState(TOP_LEFT_CORNER).with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.MACHINECORNER,true)
+                .with(SteepBlock.FACING, Direction.WEST));
+        world.setBlockState(TOP_RIGHT_CORNER,world.getBlockState(TOP_RIGHT_CORNER).with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.MACHINECORNER,true)
+                .with(SteepBlock.FACING,Direction.NORTH));
+        world.setBlockState(BOTTOM_LEFT_CORNER,world.getBlockState(BOTTOM_LEFT_CORNER).with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.MACHINECORNER,true)
+                .with(SteepBlock.FACING,Direction.SOUTH));
+        world.setBlockState(BOTTOM_RIGHT_CORNER,world.getBlockState(BOTTOM_RIGHT_CORNER).with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.MACHINECORNER,true)
+                .with(SteepBlock.FACING,Direction.EAST));
+        world.setBlockState(TOP_ROW_CENTER,world.getBlockState(TOP_ROW_CENTER)
+                .with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.FACING,Direction.NORTH));
+        world.setBlockState(MIDDLE_LEFT_CENTER,world.getBlockState(MIDDLE_LEFT_CENTER)
+                .with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.FACING,Direction.WEST));
+        world.setBlockState(MIDDLE_RIGHT_CENTER,world.getBlockState(MIDDLE_RIGHT_CENTER)
+                .with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.FACING,Direction.EAST));
+        world.setBlockState(BOTTOM_ROW_CENTER,world.getBlockState(BOTTOM_ROW_CENTER)
+                .with(SteepBlock.MACHINECENTER,true)
+                .with(SteepBlock.FACING,Direction.SOUTH));
 
     }
 }

@@ -1,11 +1,131 @@
 {
   "multipart": [
-    {   "apply": { "model": "darthunscotchmod:block/steepblock" }},
-    {   "when": { "machinecenter": "true" },
-      "apply": { "model": "darthunscotchmod:block/steepblock_wall", "uvlock": true }
+    { "apply": {"model": "darthunscotchmod:block/steepblock"}},
+    {
+      "when": {
+        "AND": [{
+          "machinecenter": "true"
+        },
+          {
+            "east": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_wall",
+        "y": 90,
+        "uvlock": true
+      }
     },
-    {   "when": { "machinecorner": "true" },
-      "apply": { "model": "darthunscotchmod:block/steepblock_cornerwall", "uvlock": true }
+    {
+      "when": {
+        "AND": [{
+          "machinecorner": "true"
+        },
+          {
+            "east": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_cornerwall",
+        "y": 90,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecenter": "true"
+        },
+          {
+            "west": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_wall",
+        "y": 270,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecorner": "true"
+        },
+          {
+            "west": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_cornerwall",
+        "y": 270,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecenter": "true"
+        },
+          {
+            "south": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_wall",
+        "y": 180,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecorner": "true"
+        },
+          {
+            "south": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_cornerwall",
+        "y": 180,
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecenter": "true"
+        },
+          {
+            "north": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_wall",
+        "uvlock": true
+      }
+    },
+    {
+      "when": {
+        "AND": [{
+          "machinecorner": "true"
+        },
+          {
+            "north": "true"
+          }
+        ]
+      },
+      "apply": {
+        "model": "darthunscotchmod:block/steepblock_cornerwall",
+        "uvlock": true
+      }
     }
   ]
 }
