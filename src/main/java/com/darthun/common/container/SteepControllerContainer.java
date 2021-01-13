@@ -23,12 +23,18 @@ public class SteepControllerContainer extends Container{
         super(ContainerInit.STEEPCONTROLLER.get(),windowId);
         this.tileEntity = tileEntityIn;
         this.canInteractWithCallable = IWorldPosCallable.of(tileEntityIn.getWorld(),tileEntityIn.getPos());
-        this.addSlot(new Slot(tileEntityIn,0,49,16));
+        //this.addSlot(new Slot(tileEntityIn,0,49,16));
+        int slotGap = 18;
+        for(int row = 0;row <3;row++){
+            for(int col = 0;col<3;col++){
+                this.addSlot(new Slot(tileEntityIn,0+(row*3)+col,49+(col*slotGap),16+(row*slotGap)));
+            }
+        }
 
         //Main Inventory 8 84
         int startx = 8;
         int starty = 86;
-        int slotGap = 18;
+
         for(int row=0;row < 3;row++){
             for(int column = 0;column < 9;column++){
                 this.addSlot(new Slot(playerInv,9+(row*9)+column,startx+(column*slotGap),starty+(row*slotGap)));
