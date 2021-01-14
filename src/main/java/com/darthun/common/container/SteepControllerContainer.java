@@ -37,7 +37,7 @@ public class SteepControllerContainer extends Container{
 
         for(int row=0;row < 3;row++){
             for(int column = 0;column < 9;column++){
-                this.addSlot(new Slot(playerInv,9+(row*9)+column,startx+(column*slotGap),starty+(row*slotGap)));
+                this.addSlot(new Slot(playerInv,9+(row*9)+column,startx+(column*slotGap),starty-2+(row*slotGap)));
             }
         }
         //HotBAR

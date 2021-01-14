@@ -1,10 +1,8 @@
 package com.darthun.common.tiles;
 
 import com.darthun.common.blocks.SteepBlock;
-import com.darthun.core.init.BlockInit;
-import com.darthun.core.init.ItemInit;
-import com.darthun.core.init.TagInit;
-import com.darthun.core.init.TileEntityInit;
+import com.darthun.common.container.SteepControllerContainer;
+import com.darthun.core.init.*;
 import com.darthun.scotchmod.ScotchMod;
 import com.google.common.collect.Iterables;
 import net.minecraft.block.Block;
@@ -37,6 +35,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeTagHandler;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.ModContainer;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -144,19 +143,8 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     @Override
     protected Container createMenu(int i, PlayerInventory playerInventory) {
-        return null;
+        return new SteepControllerContainer(i,playerInventory,this);
     }
-
-/*    @Nullable
-    @Override
-    public Container createMenu(int p_createMenu_1_, PlayerInventory p_createMenu_2_, PlayerEntity p_createMenu_3_) {
-        return super.createMenu(p_createMenu_1_, p_createMenu_2_, p_createMenu_3_);
-    }
-
-    @Override
-    protected Container createMenu(int i, PlayerInventory playerInventory) {
-        return this.createMenu(i,playerInventory, playerInventory.player);
-    }*/
 
     @Override
     public int getSizeInventory() {

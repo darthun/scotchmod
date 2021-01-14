@@ -31,7 +31,7 @@ public class SteepControllerScreen extends ContainerScreen<SteepControllerContai
     @Override
     protected void drawGuiContainerForegroundLayer(MatrixStack p_230451_1_, int mouseX, int mouseY) {
         super.drawGuiContainerForegroundLayer(p_230451_1_, mouseX, mouseY);
-        this.font.drawString(p_230451_1_, this.title.getString(), 8.0f, 8.0f, 4210752);
+        //this.font.drawString(p_230451_1_, this.title.getString(), 8.0f, 8.0f, 4210752);
         this.font.drawString(p_230451_1_, this.playerInventory.getDisplayName().getString(), 8.0f, (float) (this.ySize - 96 + 2), 4210752);
     }
 
