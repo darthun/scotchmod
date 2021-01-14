@@ -46,10 +46,11 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     private static final int[] SLOTS = new int[]{9}; // NOT IN USE
     protected NonNullList<ItemStack> items = NonNullList.withSize(9,ItemStack.EMPTY);
+    
+
     public SteepControllerTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
     }
-
     public SteepControllerTileEntity(){
         this(TileEntityInit.STEEPCONTROLLERTILEENTITY.get());
     }
@@ -168,11 +169,13 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     @Override
     public ItemStack decrStackSize(int index, int amount) {
+        System.out.println("decrStackSize was called darthundebug");
         return ItemStackHelper.getAndSplit(this.items,index,amount);
     }
 
     @Override
     public ItemStack removeStackFromSlot(int index) {
+        System.out.println("removeStackFromSlot was called darthundebug");
         return ItemStackHelper.getAndRemove(this.items,index);
     }
 
@@ -200,6 +203,14 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
+        System.out.println("isValidForSlot called darthundebug");
+        System.out.println("isValidForSlot tostring:");
+        System.out.println(stack.getItem().getTags().toString());
+        System.out.println("isValidForSlot getname:");
+        System.out.println(TagInit.BARLEY.getName());
+        System.out.println("isValidForSlot returns:");
+        System.out.println(stack.getItem().isIn(TagInit.BARLEY));
+        System.out.println("endebug darthundebug");
         return stack.getItem().isIn(TagInit.BARLEY);
     }
 
