@@ -66,5 +66,27 @@ public class SteepControllerContainer extends Container{
         return isWithinUsableDistance(canInteractWithCallable,playerEntity, BlockInit.STEEPCONTROLLER.get());
     }
 
+    @Override
+    public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
+        ItemStack itemstack = ItemStack.EMPTY;
+        Slot slot = this.inventorySlots.get(index);
+        if (slot != null && slot.getHasStack()) {
+            ItemStack itemstack1 = slot.getStack();
+            itemstack = itemstack1.copy();
+            if (index < 36) {
+                if (!this.mergeItemStack(itemstack1, 36, this.inventorySlots.size(), true)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.mergeItemStack(itemstack1, 0, 36, false)) {
+                return ItemStack.EMPTY;
+            }
 
+            if (itemstack1.isEmpty()) {
+                slot.putStack(ItemStack.EMPTY);
+            } else {
+                slot.onSlotChanged();
+            }
+        }
+        return itemstack;
+    }
 }

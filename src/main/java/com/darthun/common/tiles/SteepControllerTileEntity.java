@@ -1,10 +1,10 @@
 package com.darthun.common.tiles;
 
 import com.darthun.common.blocks.SteepBlock;
+import com.darthun.common.blocks.SteepController;
 import com.darthun.common.container.SteepControllerContainer;
 import com.darthun.core.init.*;
 import com.darthun.scotchmod.ScotchMod;
-import com.google.common.collect.Iterables;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,40 +13,36 @@ import net.minecraft.inventory.IClearable;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tags.ITag;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.Tag;
-import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.LockableLootTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ForgeTagHandler;
-import net.minecraftforge.common.Tags;
+import net.minecraft.world.IBlockReader;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.wrapper.InvWrapper;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Set;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 public class SteepControllerTileEntity extends LockableLootTileEntity implements IClearable, INamedContainerProvider {
 
     private static final int[] SLOTS = new int[]{9}; // NOT IN USE
-    protected NonNullList<ItemStack> items = NonNullList.withSize(9,ItemStack.EMPTY);
-    
+    protected NonNullList<ItemStack> machinecontents = NonNullList.withSize(9,ItemStack.EMPTY);
+    protected int numPlayersUsing;
+    private IItemHandlerModifiable items = createHandler();
+    private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
 
     public SteepControllerTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -54,7 +50,7 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
     public SteepControllerTileEntity(){
         this(TileEntityInit.STEEPCONTROLLERTILEENTITY.get());
     }
-
+//region  SteepController TileEntity
     public boolean assembleMachine(){
         Iterable<BlockPos> surroundings = BlockPos.getAllInBoxMutable(pos.add(-1,0,-1),pos.add(1,0,1));
         for (BlockPos s: surroundings)
@@ -106,29 +102,34 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
                 .with(SteepBlock.FACING,Direction.SOUTH));
 
     }
+//endregion
 
+    //region TurtyWurty
     @Override
     public void read(BlockState p_230337_1_, CompoundNBT p_230337_2_) {
         super.read(p_230337_1_, p_230337_2_);
-        this.items = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
-        ItemStackHelper.loadAllItems(p_230337_2_,this.items);
+        this.machinecontents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
+        ItemStackHelper.loadAllItems(p_230337_2_,this.machinecontents);
     }
+
 
     @Override
     public CompoundNBT write(CompoundNBT compound) {
         super.write(compound);
-        ItemStackHelper.saveAllItems(compound,this.items);
+        if(!this.checkLootAndWrite(compound)){
+            ItemStackHelper.saveAllItems(compound,this.machinecontents);
+        }
         return compound;
     }
 
     @Override
     public NonNullList<ItemStack> getItems() {
-        return this.items;
+        return this.machinecontents;
     }
 
     @Override
     public void setItems(NonNullList<ItemStack> nonNullList) {
-        this.items = nonNullList;
+        this.machinecontents = nonNullList;
     }
 
     @Override
@@ -149,12 +150,12 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     @Override
     public int getSizeInventory() {
-        return this.items.size();
+        return 9;
     }
 
     @Override
     public boolean isEmpty() {
-        for(ItemStack stack : this.items){
+        for(ItemStack stack : this.machinecontents){
             if(!stack.isEmpty()){
                 return false;
             }
@@ -164,26 +165,26 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
 
     @Override
     public ItemStack getStackInSlot(int index) {
-        return this.items.get(index);
+        return this.machinecontents.get(index);
     }
 
     @Override
     public ItemStack decrStackSize(int index, int amount) {
         System.out.println("decrStackSize was called darthundebug");
-        return ItemStackHelper.getAndSplit(this.items,index,amount);
+        return ItemStackHelper.getAndSplit(this.machinecontents,index,amount);
     }
 
     @Override
     public ItemStack removeStackFromSlot(int index) {
         System.out.println("removeStackFromSlot was called darthundebug");
-        return ItemStackHelper.getAndRemove(this.items,index);
+        return ItemStackHelper.getAndRemove(this.machinecontents,index);
     }
 
     @Override
     public void setInventorySlotContents(int index, ItemStack stack) {
-        ItemStack itemStack = this.items.get(index);
+        ItemStack itemStack = this.machinecontents.get(index);
         boolean flag = !stack.isEmpty() && stack.isItemEqual(itemStack) && ItemStack.areItemStackTagsEqual(stack,itemStack);
-        this.items.set(index,stack);
+        this.machinecontents.set(index,stack);
         if(stack.getCount() > this.getInventoryStackLimit()){
             stack.setCount(this.getInventoryStackLimit());
         }
@@ -217,7 +218,7 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
     @Override
     public void clear() {
         super.clear();
-        this.items.clear();
+        this.machinecontents.clear();
     }
 
     @Nullable
@@ -242,4 +243,97 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
     public void handleUpdateTag(BlockState state, CompoundNBT tag) {
         this.read(state,tag);
     }
+
+    @Override
+    public boolean receiveClientEvent(int id, int type) {
+        if (id == 1) {
+            this.numPlayersUsing = type;
+            return true;
+        } else {
+            return super.receiveClientEvent(id, type);
+        }
+    }
+
+    @Override
+    public void openInventory(PlayerEntity player) {
+        if (!player.isSpectator()) {
+            if (this.numPlayersUsing < 0) {
+                this.numPlayersUsing = 0;
+            }
+
+            ++this.numPlayersUsing;
+            this.onOpenOrClose();
+        }
+    }
+
+    @Override
+    public void closeInventory(PlayerEntity player) {
+        if (!player.isSpectator()) {
+            --this.numPlayersUsing;
+            this.onOpenOrClose();
+        }
+    }
+
+    protected void onOpenOrClose() {
+        Block block = this.getBlockState().getBlock();
+        if (block instanceof SteepController) {
+            this.world.addBlockEvent(this.pos, block, 1, this.numPlayersUsing);
+            this.world.notifyNeighborsOfStateChange(this.pos, block);
+        }
+    }
+
+
+    public static int getPlayersUsing(IBlockReader reader, BlockPos pos) {
+        BlockState blockstate = reader.getBlockState(pos);
+        if (blockstate.hasTileEntity()) {
+            TileEntity tileentity = reader.getTileEntity(pos);
+            if (tileentity instanceof SteepControllerTileEntity) {
+                return ((SteepControllerTileEntity) tileentity).numPlayersUsing;
+            }
+        }
+        return 0;
+    }
+
+
+/*    public static void swapContents(ExampleChestTileEntity te, ExampleChestTileEntity otherTe) {
+        NonNullList<ItemStack> list = te.getItems();
+        te.setItems(otherTe.getItems());
+        otherTe.setItems(list);
+    }*/
+
+    @Override
+    public void updateContainingBlockInfo() {
+        super.updateContainingBlockInfo();
+        if (this.itemHandler != null) {
+            this.itemHandler.invalidate();
+            this.itemHandler = null;
+        }
+    }
+
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
+        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+            return itemHandler.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    private IItemHandlerModifiable createHandler() {
+        return new InvWrapper(this);
+    }
+
+    @Override
+    protected void invalidateCaps() {
+        super.invalidateCaps();
+        itemHandler.invalidate();
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        if(itemHandler != null) {
+            itemHandler.invalidate();
+        }
+    }
+    //endregion
 }
