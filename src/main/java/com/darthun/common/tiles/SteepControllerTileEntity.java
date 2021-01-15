@@ -17,6 +17,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.LockableLootTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -36,13 +37,32 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class SteepControllerTileEntity extends LockableLootTileEntity implements IClearable, INamedContainerProvider {
+public class SteepControllerTileEntity extends TileEntity implements ITickableTileEntity {
 
-    private static final int[] SLOTS = new int[]{9}; // NOT IN USE
-    protected NonNullList<ItemStack> machinecontents = NonNullList.withSize(9,ItemStack.EMPTY);
-    protected int numPlayersUsing;
-    private IItemHandlerModifiable items = createHandler();
-    private LazyOptional<IItemHandlerModifiable> itemHandler = LazyOptional.of(() -> items);
+    public static final String INPUT = "input";
+    public static final String FUEL = "fuel";
+    public static final String OUTPUT = "output";
+    public static final String MULTIPROCESS_UPGRADES = "multiprocess_upgrades";
+    public static final String COOK_PROGRESS = "cook_progress";
+    public static final String BURN_TIME = "burn_time";
+    public static final String BURN_VALUE = "burn_value";
+
+    public final InputItemHandler input = new InputItemHandler(this);
+
+
+    public final LazyOptional<IItemHandler> inputOptional = LazyOptional.of(() -> this.input);
+
+
+    public int burnTimeRemaining = 0;
+    public int lastItemBurnedValue = 200;
+    public int cookProgress = 0;
+    public boolean isRoomToCook = true;
+    public boolean canConsumeFuel = false;
+    public ClaimableRecipeWrapper cachedRecipes = this.input.getFreshRecipeInput();
+    public boolean needsRecipeUpdate = false;
+    public boolean needsOutputUpdate = false;
+    public boolean needsFuelUpdate = false;
+
 
     public SteepControllerTileEntity(TileEntityType<?> tileEntityTypeIn) {
         super(tileEntityTypeIn);
@@ -50,7 +70,213 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
     public SteepControllerTileEntity(){
         this(TileEntityInit.STEEPCONTROLLERTILEENTITY.get());
     }
-//region  SteepController TileEntity
+
+    @Override
+    public void invalidateCaps()
+    {
+        this.inputOptional.invalidate();
+    }
+
+    @Override
+    public void read(BlockState state, CompoundNBT compound)
+    {
+        //TODO : remove cooking
+        super.read(state, compound);
+        this.input.deserializeNBT(compound.getCompound(INPUT));
+        this.cookProgress = compound.getInt(COOK_PROGRESS);
+        this.burnTimeRemaining = compound.getInt(BURN_TIME);
+        this.lastItemBurnedValue = compound.getInt(BURN_VALUE);
+        this.onInputInventoryChanged();
+    }
+
+
+    @Override
+    public CompoundNBT write(CompoundNBT compound)
+    {
+        //TODO : remove cooking
+        super.write(compound);
+        compound.put(INPUT, this.input.serializeNBT());
+        compound.putInt(COOK_PROGRESS, this.cookProgress);
+        compound.putInt(BURN_TIME, this.burnTimeRemaining);
+        compound.putInt(BURN_VALUE, this.lastItemBurnedValue);
+        return compound;
+    }
+
+    public int getBurnConsumption()
+    {
+        return Math.max(1, this.cachedRecipes.getRecipeCount());
+    }
+
+    public boolean isBurning()
+    {
+        return this.burnTimeRemaining > 0;
+    }
+
+    public void updateBurningBlockstates(boolean burning)
+    {
+        for (Direction direction : Direction.Plane.HORIZONTAL)
+        {
+            BlockPos adjacentPos = this.pos.offset(direction);
+            BlockState state = this.world.getBlockState(adjacentPos);
+            if (state.getBlock() instanceof JumboFurnaceBlock)
+            {
+                this.world.setBlockState(adjacentPos, state.with(JumboFurnaceBlock.LIT, burning));
+            }
+        }
+    }
+
+    public void markInputInventoryChanged()
+    {
+        this.markDirty();
+        this.onInputInventoryChanged();
+    }
+
+    public void onInputInventoryChanged()
+    {
+        this.needsRecipeUpdate = true;
+    }
+
+    /** Called at the start of a tick when the input inventory has changed **/
+    public void updateRecipes()
+    {
+        ClaimableRecipeWrapper wrapper = this.input.getFreshRecipeInput();
+        // get all recipes allowed by furnace or jumbo furnace
+        // sort them by specificity (can we do this on recipe reload?)
+        // recipes requiring multiple ingredients = most important, ingredients with more matching items (tags) = less important
+        List<JumboFurnaceRecipe> recipes = RecipeSorter.INSTANCE.getSortedFurnaceRecipes(this.world.getRecipeManager());
+        // start assigning input slots to usable recipes as they are found
+        for (JumboFurnaceRecipe recipe : recipes)
+        {
+            // loop recipe over inputs until it can't match or we have no unused inputs left
+            while (wrapper.getRecipeCount() < this.getMaxSimultaneousRecipes() && wrapper.matchAndClaimInputs(recipe, this.world) && wrapper.hasUnusedInputsLeft());
+        }
+        // when all input slots are claimed or the recipe list is exhausted, set the new recipe cache
+        this.cachedRecipes = wrapper;
+        this.needsRecipeUpdate = false;
+        this.needsOutputUpdate = true;
+    }
+
+
+    /** Called at the start of a tick when the output inventory has changed, or if the recipe cache has updated**/
+    public void updateOutput()
+    {
+        this.isRoomToCook = this.checkIfRoomToCook();
+        this.needsOutputUpdate = false;
+    }
+
+    public boolean checkIfRoomToCook()
+    {
+        return true;
+    }
+
+    @Override
+    public void tick()
+    {
+        // if burning, decrement burn time
+        boolean dirty = false;
+        boolean wasBurningBeforeTick = this.isBurning();
+        if (wasBurningBeforeTick)
+        {
+            this.burnTimeRemaining -= this.getBurnConsumption();
+            dirty = true;
+        }
+
+        if (!this.world.isRemote)
+        {
+            // reinform self of own state if inventories have changed
+            if (this.needsRecipeUpdate)
+            {
+                this.updateRecipes();
+            }
+
+
+            boolean hasSmeltableInputs = this.cachedRecipes.getRecipeCount() > 0;
+
+            // if burning, or if it can consume fuel and has a smeltable input
+            if (this.isBurning() || (this.canConsumeFuel && hasSmeltableInputs))
+            {
+                // if not burning but can start cooking
+                // this also implies that we can consume fuel
+                if (!this.isBurning() && hasSmeltableInputs)
+                {
+                    // consume fuel and start burning
+                    this.consumeFuel();
+                }
+
+                // if burning and has smeltable inputs
+                if (this.isBurning() && hasSmeltableInputs)
+                {
+                    // increase cook progress
+                    this.cookProgress++;
+
+                    // if cook progress is complete, reset cook progress and do crafting
+                    if (this.cookProgress >= JumboFurnace.SERVER_CONFIG.jumboFurnaceCookTime.get())
+                    {
+                        this.cookProgress = 0;
+                        this.craft();
+                    }
+                    dirty = true;
+                }
+                else // otherwise, reset cook progress
+                {
+                    this.cookProgress = 0;
+                    dirty = true;
+                }
+            }
+            // otherwise, if not burning but has cookprogress, reduce cook progress
+            else if (!this.isBurning() && this.cookProgress > 0)
+            {
+                if (hasSmeltableInputs)
+                {
+                    this.cookProgress = Math.max(0, this.cookProgress - 2);
+                }
+                else
+                {
+                    this.cookProgress = 0;
+                }
+                dirty = true;
+            }
+
+            boolean isBurningAfterTick = this.isBurning();
+
+            // if burning state changed since tick started, update furnace blockstates
+            if (isBurningAfterTick != wasBurningBeforeTick)
+            {
+                this.updateBurningBlockstates(isBurningAfterTick);
+            }
+
+            if (dirty)
+            {
+                this.markDirty();
+
+                BlockState state = this.world.getBlockState(pos);
+                this.world.notifyNeighborsOfStateChange(pos, state.getBlock());
+
+
+            }
+
+
+        }
+    }
+
+    public void consumeFuel()
+    {
+
+    }
+
+    public void craft()
+    {
+            result = this.output.insertCraftResult(slot, result, false);
+            this.input.setStackInSlot(slot, unusedInputs.getStackInSlot(slot));
+    }
+
+    @Override
+    public void markDirty()
+    {
+        super.markDirty();
+    }
+
+    //region  SteepController Assemble Logic
     public boolean assembleMachine(){
         Iterable<BlockPos> surroundings = BlockPos.getAllInBoxMutable(pos.add(-1,0,-1),pos.add(1,0,1));
         for (BlockPos s: surroundings)
@@ -104,236 +330,4 @@ public class SteepControllerTileEntity extends LockableLootTileEntity implements
     }
 //endregion
 
-    //region TurtyWurty
-    @Override
-    public void read(BlockState p_230337_1_, CompoundNBT p_230337_2_) {
-        super.read(p_230337_1_, p_230337_2_);
-        this.machinecontents = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
-        ItemStackHelper.loadAllItems(p_230337_2_,this.machinecontents);
-    }
-
-
-    @Override
-    public CompoundNBT write(CompoundNBT compound) {
-        super.write(compound);
-        if(!this.checkLootAndWrite(compound)){
-            ItemStackHelper.saveAllItems(compound,this.machinecontents);
-        }
-        return compound;
-    }
-
-    @Override
-    public NonNullList<ItemStack> getItems() {
-        return this.machinecontents;
-    }
-
-    @Override
-    public void setItems(NonNullList<ItemStack> nonNullList) {
-        this.machinecontents = nonNullList;
-    }
-
-    @Override
-    public void markDirty() {
-        super.markDirty();
-        this.world.notifyBlockUpdate(this.getPos(),this.getBlockState(),this.getBlockState(), Constants.BlockFlags.BLOCK_UPDATE);
-    }
-
-    @Override
-    protected ITextComponent getDefaultName() {
-        return new TranslationTextComponent("container."+ScotchMod.MOD_ID+".steepblockcontroller");
-    }
-
-    @Override
-    protected Container createMenu(int i, PlayerInventory playerInventory) {
-        return new SteepControllerContainer(i,playerInventory,this);
-    }
-
-    @Override
-    public int getSizeInventory() {
-        return 9;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        for(ItemStack stack : this.machinecontents){
-            if(!stack.isEmpty()){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public ItemStack getStackInSlot(int index) {
-        return this.machinecontents.get(index);
-    }
-
-    @Override
-    public ItemStack decrStackSize(int index, int amount) {
-        System.out.println("decrStackSize was called darthundebug");
-        return ItemStackHelper.getAndSplit(this.machinecontents,index,amount);
-    }
-
-    @Override
-    public ItemStack removeStackFromSlot(int index) {
-        System.out.println("removeStackFromSlot was called darthundebug");
-        return ItemStackHelper.getAndRemove(this.machinecontents,index);
-    }
-
-    @Override
-    public void setInventorySlotContents(int index, ItemStack stack) {
-        ItemStack itemStack = this.machinecontents.get(index);
-        boolean flag = !stack.isEmpty() && stack.isItemEqual(itemStack) && ItemStack.areItemStackTagsEqual(stack,itemStack);
-        this.machinecontents.set(index,stack);
-        if(stack.getCount() > this.getInventoryStackLimit()){
-            stack.setCount(this.getInventoryStackLimit());
-        }
-        if(!flag){
-            this.markDirty();
-        }
-    }
-
-    @Override
-    public boolean isUsableByPlayer(PlayerEntity player) {
-        if(this.world.getTileEntity(pos) != this){
-            return false;
-        } else {
-            return player.getDistanceSq((double)this.pos.getX()+0.5D,(double)this.pos.getY()+0.5D,(double)this.pos.getZ()+0.5D) <= 64.0D;
-        }
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int index, ItemStack stack) {
-        System.out.println("isValidForSlot called darthundebug");
-        System.out.println("isValidForSlot tostring:");
-        System.out.println(stack.getItem().getTags().toString());
-        System.out.println("isValidForSlot getname:");
-        System.out.println(TagInit.BARLEY.getName());
-        System.out.println("isValidForSlot returns:");
-        System.out.println(stack.getItem().isIn(TagInit.BARLEY));
-        System.out.println("endebug darthundebug");
-        return stack.getItem().isIn(TagInit.BARLEY);
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-        this.machinecontents.clear();
-    }
-
-    @Nullable
-    @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        CompoundNBT nbt = new CompoundNBT();
-        this.write(nbt);
-        return new SUpdateTileEntityPacket(this.getPos(),1,nbt);
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        this.read(null,pkt.getNbtCompound());
-    }
-
-    @Override
-    public CompoundNBT getUpdateTag() {
-        return this.write(new CompoundNBT());
-    }
-
-    @Override
-    public void handleUpdateTag(BlockState state, CompoundNBT tag) {
-        this.read(state,tag);
-    }
-
-    @Override
-    public boolean receiveClientEvent(int id, int type) {
-        if (id == 1) {
-            this.numPlayersUsing = type;
-            return true;
-        } else {
-            return super.receiveClientEvent(id, type);
-        }
-    }
-
-    @Override
-    public void openInventory(PlayerEntity player) {
-        if (!player.isSpectator()) {
-            if (this.numPlayersUsing < 0) {
-                this.numPlayersUsing = 0;
-            }
-
-            ++this.numPlayersUsing;
-            this.onOpenOrClose();
-        }
-    }
-
-    @Override
-    public void closeInventory(PlayerEntity player) {
-        if (!player.isSpectator()) {
-            --this.numPlayersUsing;
-            this.onOpenOrClose();
-        }
-    }
-
-    protected void onOpenOrClose() {
-        Block block = this.getBlockState().getBlock();
-        if (block instanceof SteepController) {
-            this.world.addBlockEvent(this.pos, block, 1, this.numPlayersUsing);
-            this.world.notifyNeighborsOfStateChange(this.pos, block);
-        }
-    }
-
-
-    public static int getPlayersUsing(IBlockReader reader, BlockPos pos) {
-        BlockState blockstate = reader.getBlockState(pos);
-        if (blockstate.hasTileEntity()) {
-            TileEntity tileentity = reader.getTileEntity(pos);
-            if (tileentity instanceof SteepControllerTileEntity) {
-                return ((SteepControllerTileEntity) tileentity).numPlayersUsing;
-            }
-        }
-        return 0;
-    }
-
-
-/*    public static void swapContents(ExampleChestTileEntity te, ExampleChestTileEntity otherTe) {
-        NonNullList<ItemStack> list = te.getItems();
-        te.setItems(otherTe.getItems());
-        otherTe.setItems(list);
-    }*/
-
-    @Override
-    public void updateContainingBlockInfo() {
-        super.updateContainingBlockInfo();
-        if (this.itemHandler != null) {
-            this.itemHandler.invalidate();
-            this.itemHandler = null;
-        }
-    }
-
-    @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nonnull Direction side) {
-        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return itemHandler.cast();
-        }
-        return super.getCapability(cap, side);
-    }
-
-    private IItemHandlerModifiable createHandler() {
-        return new InvWrapper(this);
-    }
-
-    @Override
-    protected void invalidateCaps() {
-        super.invalidateCaps();
-        itemHandler.invalidate();
-    }
-
-    @Override
-    public void remove() {
-        super.remove();
-        if(itemHandler != null) {
-            itemHandler.invalidate();
-        }
-    }
-    //endregion
 }
